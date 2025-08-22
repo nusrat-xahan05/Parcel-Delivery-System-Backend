@@ -1,6 +1,7 @@
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import { router } from "./app/routes";
+import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
 
 
 const app: Application = express();
@@ -15,6 +16,8 @@ app.get('/', (req: Request, res: Response) => {
         message: "Welcome to Parcel Delivery System Backend"
     });
 })
+
+app.use(globalErrorHandler);
 
 
 export default app;
