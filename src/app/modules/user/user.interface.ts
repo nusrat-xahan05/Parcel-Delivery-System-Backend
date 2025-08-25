@@ -20,7 +20,7 @@ export enum AgentStatus {
     REJECTED = "REJECTED"
 }
 
-export interface IReviewAgentRequest {
+export interface IAgentRequest {
     userId?: Types.ObjectId;
     agentStatus?: AgentStatus;
     reviewedBy?: Types.ObjectId;

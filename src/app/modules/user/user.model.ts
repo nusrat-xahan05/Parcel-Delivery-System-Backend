@@ -1,5 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
-import { AgentStatus, IReviewAgentRequest, IUser, Role, UserStatus } from "./user.interface";
+import { AgentStatus, IAgentRequest, IUser, Role, UserStatus } from "./user.interface";
 
 
 // -------- USER MODEL SCHEMA
@@ -51,7 +51,7 @@ export const User = model<IUser>("User", userSchema);
 
 
 // -------- AGENT REQUEST BY USER MODEL SCHEMA
-const agentRequestReviewSchema = new Schema<IReviewAgentRequest>({
+const agentRequestReviewSchema = new Schema<IAgentRequest>({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -69,4 +69,4 @@ const agentRequestReviewSchema = new Schema<IReviewAgentRequest>({
     timestamps: true,
     versionKey: false
 })
-export const AgentRequestReview = model<IReviewAgentRequest>("AgentRequestReview", agentRequestReviewSchema);
+export const AgentRequest = model<IAgentRequest>("AgentRequest", agentRequestReviewSchema);
