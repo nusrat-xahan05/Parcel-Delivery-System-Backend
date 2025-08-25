@@ -11,15 +11,16 @@ const generateOtp = (length = 6) => {
     return otp
 }
 
-const sendOTP = async (email: string, name: string) => {
-    const user = await User.findOne({ email })
+const sendOTP = async (email: string) => {
+    const isUserExist = await User.findOne({ email })
 
-    if (!user) {
+    if (!isUserExist) {
         throw new AppError(404, "User not found");
     }
-    if (user.isVerified) {
+    if (isUserExist.isVerified) {
         throw new AppError(401, "You are already verified");
     }
+
     const otp = generateOtp();
     const redisKey = `otp:${email}`
 
@@ -35,7 +36,7 @@ const sendOTP = async (email: string, name: string) => {
         subject: "Your OTP Code",
         templateName: "otp",
         templateData: {
-            name: name,
+            name: isUserExist.name,
             otp: otp
         }
     })

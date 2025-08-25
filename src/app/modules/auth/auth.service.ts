@@ -1,4 +1,4 @@
-import { IUser } from "../user/user.interface"
+import { IUser, UserStatus } from "../user/user.interface"
 import { User } from "../user/user.model";
 import httpStatus from "http-status-codes";
 import bcryptjs from "bcryptjs"
@@ -13,6 +13,14 @@ const credentialsLogin = async (payload: Partial<IUser>) => {
     const isUserExist = await User.findOne({ email })
     if (!isUserExist) {
         throw new AppError(httpStatus.BAD_REQUEST, "User Email Does Not Exist");
+    }
+
+    if (!isUserExist.isVerified) {
+        throw new AppError(httpStatus.BAD_REQUEST, "User Is Not Verified");
+    }
+
+    if (isUserExist.userStatus === UserStatus.BLOCKED) {
+        throw new AppError(httpStatus.BAD_REQUEST, `User Is ${isUserExist.userStatus}`);
     }
 
     const isPasswordMatched = await bcryptjs.compare(password as string, isUserExist.password as string);
