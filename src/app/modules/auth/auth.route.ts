@@ -14,8 +14,8 @@ router.post('/login', validateRequest(loginZodSchema), checkAuth(...Object.value
 // // CREATE ACCESSTOKEN FROM REFRESH TOKEN ------
 // router.post('/refresh-token', checkAuth(...Object.values(Role)), AuthControllers.getNewAccessToken);
 
-// // USER LOGOUT ------
-// router.post('/logout', AuthControllers.logout);
+// USER LOGOUT ------
+router.post('/logout', AuthControllers.logout);
 
 
 export const AuthRoutes = router;
