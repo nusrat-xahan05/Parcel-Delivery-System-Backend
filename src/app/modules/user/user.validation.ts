@@ -84,17 +84,6 @@ export const updateUserZodSchema = z.object({
         .min(3, { message: "Name is Too Short" })
         .max(50, { message: "Name is Too Long" })
         .optional(),
-    role: z
-        .enum(Object.values(Role) as [Role, ...Role[]])
-        .optional()
-        .superRefine((val, ctx) => {
-            if (val && !Object.values(Role).includes(val)) {
-                ctx.addIssue({
-                    code: "custom",
-                    message: `Role Must Be 'SENDER' or 'RECEIVER'. '${val}' is Not Acceptable`,
-                });
-            }
-        }),
     isVerified: z
         .boolean({ error: "Verified Must Be True or False" })
         .optional(),

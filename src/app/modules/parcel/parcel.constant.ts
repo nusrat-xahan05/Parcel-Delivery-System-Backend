@@ -1,0 +1,1 @@
+export const parcelSearchableFields = ["serviceType", "senderEmail", "receiverEmail", "currentStatus"];
