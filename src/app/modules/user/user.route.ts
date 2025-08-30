@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { UserControllers } from "./user.controller";
 import { validateRequest } from "../../middlewares/validateRequest";
-import { createUserZodSchema } from "./user.validation";
+import { agentRequestReviewZodSchema, createUserZodSchema, updateUserZodSchema } from "./user.validation";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "./user.interface";
 
@@ -17,6 +17,8 @@ router.post('/agent-request', checkAuth(Role.SENDER, Role.RECEIVER), UserControl
 // GET ME USER ------ (USER ENDPOINT)
 router.get("/me", checkAuth(...Object.values(Role)), UserControllers.getMe);
 
+
+
 // GET ALL USERS ------ (ADMIN ENDPOINT)
 router.get('/all-users', checkAuth(Role.ADMIN), UserControllers.getAllUsers);
 
@@ -27,10 +29,10 @@ router.get('/agent-requests', checkAuth(Role.ADMIN), UserControllers.GetAllAgent
 router.get("/:id", checkAuth(Role.ADMIN), UserControllers.getSingleUser);
 
 // USER PROFILE UPDATE, BLOCK CAN BE DONE BY ADMIN ------ (USER, ADMIN, AGENT ENDPOINT)
-// router.patch('/:id', validateRequest(updateUserZodSchema), checkAuth(...Object.values(Role)), UserControllers.updateUser)
+router.patch('/:id', validateRequest(updateUserZodSchema), checkAuth(...Object.values(Role)), UserControllers.updateUser)
 
 // REVIEW AGENT REQUEST ------ (ADMIN ENDPOINT)
-// router.post('/review-agent-request/:id', validateRequest(reviewAgentRequestZodSchema), checkAuth(Role.ADMIN), UserControllers.reviewAgentRequest);
+router.post('/review-agent-request/:id', validateRequest(agentRequestReviewZodSchema), checkAuth(Role.ADMIN), UserControllers.reviewAgentRequest);
 
 
 

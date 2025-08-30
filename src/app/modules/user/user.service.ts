@@ -1,4 +1,4 @@
-import { AgentStatus, IUser, Role } from "./user.interface";
+import { AgentStatus, IAgentRequest, IUser, Role } from "./user.interface";
 import { AgentRequest, User } from "./user.model";
 import httpStatus from "http-status-codes"
 import bcryptjs from "bcryptjs"
@@ -6,6 +6,7 @@ import { envVars } from "../../config/env";
 import AppError from "../../errorHelpers/appError";
 import { agentUserSearchableFields, userSearchableFields } from "./user.constant";
 import { QueryBuilder } from "../../utils/queryBuilder";
+import { JwtPayload } from "jsonwebtoken";
 
 
 // USER REGISTRATION ------ 
@@ -102,6 +103,7 @@ const GetAllAgentRequest = async (query: Record<string, string>) => {
     }
 }
 
+// GET SINGLE USER BY ADMIN ------
 const getSingleUser = async (id: string) => {
     const user = await User.findById(id).select("-password");
     return {
@@ -109,9 +111,57 @@ const getSingleUser = async (id: string) => {
     }
 };
 
+// USER PROFILE UPDATE, BLOCK CAN BE DONE BY ADMIN ------
+const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken: JwtPayload) => {
+    const isUserExist = await User.findById(userId);
+    if (!isUserExist) {
+        throw new AppError(httpStatus.NOT_FOUND, "No User Exist With This Id");
+    }
+
+    if ((decodedToken.userId !== userId) && (decodedToken.role === Role.SENDER || decodedToken.role === Role.RECEIVER || decodedToken.role === Role.AGENT)) {
+        throw new AppError(httpStatus.BAD_REQUEST, "You're not Authorized to Change Others Profile");
+    }
+
+    if (payload.role || payload.userStatus || payload.agentStatus || payload.isVerified) {
+        if (decodedToken.role === Role.SENDER || decodedToken.role === Role.RECEIVER || decodedToken.role === Role.AGENT) {
+            throw new AppError(httpStatus.FORBIDDEN, "You're Not Authorized To Change Role, Status & Verification");
+        }
+    }
+
+    if (payload.password) {
+        throw new AppError(httpStatus.BAD_REQUEST, "Change the Password From Reset Password");
+    }
+
+    const newUpdateUser = await User.findByIdAndUpdate(userId, payload, { new: true, runValidators: true });
+    return newUpdateUser;
+}
+
+// REVIEW AGENT REQUEST BY ADMIN ------
+const reviewAgentRequest = async (requestId: string, payload: Partial<IAgentRequest>, decodedToken: JwtPayload) => {
+    const isRequestExist = await AgentRequest.findById(requestId);
+    if (!isRequestExist) {
+        throw new AppError(httpStatus.NOT_FOUND, "No Request Exist With This Id");
+    }
+    if (isRequestExist.agentStatus === payload.agentStatus) {
+        throw new AppError(httpStatus.NOT_FOUND, `Agent Status is Already In ${isRequestExist.agentStatus}`);
+    }
+
+    isRequestExist.agentStatus = payload.agentStatus as AgentStatus;
+    isRequestExist.reviewedBy = decodedToken.userId;
+    await isRequestExist.save();
+
+    if (payload.agentStatus === AgentStatus.APPROVED) {
+        await User.findByIdAndUpdate(isRequestExist.userId, { role: Role.AGENT, agentStatus: payload.agentStatus });
+    }
+    if (payload.agentStatus === AgentStatus.REJECTED) {
+        await User.findByIdAndUpdate(isRequestExist.userId, { agentStatus: payload.agentStatus });
+    }
+
+    return isRequestExist;
+}
+
 
 
 export const UserServices = {
-    createUser, createAgentRequest, getMe, getAllUsers, GetAllAgentRequest, getSingleUser
-    // updateUser, reviewAgentRequest
+    createUser, createAgentRequest, getMe, getAllUsers, GetAllAgentRequest, getSingleUser, updateUser, reviewAgentRequest
 }

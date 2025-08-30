@@ -84,8 +84,36 @@ const getSingleUser = catchAsync(async (req: Request, res: Response, next: NextF
     })
 })
 
+// USER PROFILE UPDATE, BLOCK & Verification CAN BE DONE BY ADMIN ------
+const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.id;
+    const decodedToken = req.user;
+    const payload = req.body;
+    const user = await UserServices.updateUser(userId, payload, decodedToken)
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "User Updated Successfully",
+        data: user,
+    })
+})
+
+// REVIEW AGENT REQUEST ------
+const reviewAgentRequest = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const requestId = req.params.id;
+    const decodedToken = req.user;
+    const user = await UserServices.reviewAgentRequest(requestId, req.body, decodedToken)
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Agent Request Reviewed Successfully",
+        data: user,
+    })
+})
 
 
 export const UserControllers = {
-    createUser, createAgentRequest, getMe, getAllUsers, GetAllAgentRequest, getSingleUser
+    createUser, createAgentRequest, getMe, getAllUsers, GetAllAgentRequest, getSingleUser, updateUser, reviewAgentRequest
 }
