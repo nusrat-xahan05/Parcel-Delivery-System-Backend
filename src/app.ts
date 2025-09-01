@@ -16,15 +16,19 @@ app.use(express.json());
 //     origin: envVars.FRONTEND_URL,
 //     credentials: true
 // }))
+
 const allowedOrigins = envVars.FRONTEND_URL.split(",");
+// console.log("Allowed origins:", allowedOrigins);
 
 app.use(
   cors({
     origin: (origin, callback) => {
+      // eslint-disable-next-line no-console
+      console.log("Requested origins:", origin);
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error("Not allowed by CORS: " + origin));
       }
     },
     credentials: true,
