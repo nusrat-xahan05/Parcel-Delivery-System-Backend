@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { Role } from "../user/user.interface";
+import { Schema } from "mongoose";
 
 export enum ServiceType {
     REGULAR = "REGULAR",
@@ -42,10 +43,10 @@ export enum AgentParcelStatus {
 
 export interface IParcelStatusLog {
     status: ParcelStatus;
-    timeStamp?:Date;
+    timeStamp?: Date;
     updatedBy: Role;
     updaterId: Types.ObjectId;
-    location? : string;
+    location?: string;
 }
 
 export interface IParcel {
@@ -55,7 +56,10 @@ export interface IParcel {
     deliveryType: DeliveryType;
     parcelType: ParcelType;
     senderEmail?: string;
-    senderId?: Types.ObjectId;
+    senderId?: {
+        type: Schema.Types.ObjectId,
+        ref: "User"
+    };
     receiverName: string;
     receiverEmail: string;
     receiverPhone: string;
@@ -63,7 +67,10 @@ export interface IParcel {
     deliveryAddress: string;
     weight: number;
     codAmount: number;  // COLLECT FROM CUSTOMER AMOUNT
-    agentId?: Types.ObjectId;
+    agentId?: {
+        type: Schema.Types.ObjectId,
+        ref: "User"
+    };
     currentStatus: ParcelStatus;
     parcelStatusLog: IParcelStatusLog[];
 }

@@ -126,7 +126,7 @@ export const createParcelZodSchema = z.object({
         .number({
             error: (issue) => issue.input === undefined
                 ? "Weight is Required"
-                : "Weight Must Be a String"
+                : "Weight Must Be a Number"
         }).min(.1, {
             message: 'Weight must be a Positive Number'
         }),

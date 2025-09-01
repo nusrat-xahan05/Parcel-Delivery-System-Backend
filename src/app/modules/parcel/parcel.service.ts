@@ -120,6 +120,9 @@ const manageParcel = async (parcelId: string, payload: Partial<IParcel>, decoded
         else if ((payload.currentStatus === ParcelStatus.CANCELLED) && ((isParcelExist.currentStatus === ParcelStatus.REQUESTED) || (isParcelExist.currentStatus === ParcelStatus.APPROVED))) {
             isParcelExist.currentStatus = ParcelStatus.CANCELLED;
         }
+        else if (((payload.currentStatus === ParcelStatus.DISPATCHED) && (isParcelExist.currentStatus === ParcelStatus.APPROVED)) || ((payload.currentStatus === ParcelStatus.IN_TRANSIT) && (isParcelExist.currentStatus === ParcelStatus.DISPATCHED)) || ((payload.currentStatus === ParcelStatus.OUT_FOR_DELIVERY) && (isParcelExist.currentStatus === ParcelStatus.IN_TRANSIT)) || ((payload.currentStatus === ParcelStatus.DELIVERED) && (isParcelExist.currentStatus === ParcelStatus.OUT_FOR_DELIVERY))) {
+            isParcelExist.currentStatus = payload.currentStatus;
+        }
         else {
             throw new AppError(httpStatus.BAD_REQUEST, `Cannot ${payload.currentStatus}. Parcel is Already ${isParcelExist.currentStatus}`);
         }
@@ -196,7 +199,7 @@ const cancelParcel = async (parcelId: string, decodedToken: JwtPayload) => {
         throw new AppError(httpStatus.BAD_REQUEST, "No Parcel Exist With This Id");
     }
 
-    if ((isParcelExist.currentStatus === ParcelStatus.DISPATCHED) || (isParcelExist.currentStatus === ParcelStatus.IN_TRANSIT) || (isParcelExist.currentStatus === ParcelStatus.OUT_FOR_DELIVERY) || (isParcelExist.currentStatus === ParcelStatus.DELIVERED) || (isParcelExist.currentStatus === ParcelStatus.CANCELLED) || (isParcelExist.currentStatus === ParcelStatus.BLOCKED)) {
+    if ((isParcelExist.currentStatus !== ParcelStatus.REQUESTED) && (isParcelExist.currentStatus !== ParcelStatus.APPROVED)) {
         throw new AppError(httpStatus.BAD_REQUEST, `Sorry, You Can't Cancel a ${isParcelExist.currentStatus} Parcel`);
     }
 
@@ -248,14 +251,17 @@ const trackParcel = async (trackingId: string) => {
 
     const result = {
         trackingId: isParcelExist.trackingId,
-        currentStatus: isParcelExist.currentStatus,
-        parcelStatusLog: isParcelExist.parcelStatusLog,
+        parcelType: isParcelExist.parcelType,
+        weight: isParcelExist.weight,
+        codAmount: isParcelExist.codAmount,
+        deliveryAddress: isParcelExist.deliveryAddress,
         senderName: senderInfo?.name,
         senderEmail: senderInfo?.email,
         senderPhone: senderInfo?.phone,
         receiverName: isParcelExist.receiverName,
         receiverEmail: isParcelExist.receiverEmail,
-        receiverPhone: isParcelExist.receiverPhone
+        receiverPhone: isParcelExist.receiverPhone,
+        parcelStatusLog: isParcelExist.parcelStatusLog
     }
 
     return {

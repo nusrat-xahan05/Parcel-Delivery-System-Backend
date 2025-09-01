@@ -12,7 +12,7 @@ const router = Router()
 router.post('/create-parcel', validateRequest(createParcelZodSchema), checkAuth(Role.ADMIN, Role.SENDER), ParcelControllers.createParcel);
 
 // GET MY PARCELS ------ (SENDER ENDPOINT)
-router.get('/me', checkAuth(Role.SENDER, Role.ADMIN), ParcelControllers.getMyParcels);
+router.get('/me', checkAuth(Role.ADMIN, Role.SENDER), ParcelControllers.getMyParcels);
 
 
 // GET ALL PARCELS ------ (ADMIN ENDPOINT)
@@ -26,8 +26,8 @@ router.get('/incoming', checkAuth(Role.RECEIVER), ParcelControllers.getIncomingP
 router.get('/history', checkAuth(Role.RECEIVER), ParcelControllers.viewHistory);
 
 
-// GET SINGLE PARCEL ------ (ADMIN ENDPOINT)
-router.get("/:id", checkAuth(Role.ADMIN), ParcelControllers.getSingleParcel);
+// GET SINGLE PARCEL ------ (SENDER, ADMIN ENDPOINT)
+router.get("/:id", checkAuth(Role.ADMIN, Role.SENDER), ParcelControllers.getSingleParcel);
 
 // UPDATE PARCEL ------ (ADMIN ENDPOINT)
 router.patch('/:id', validateRequest(manageParcelZodSchema), checkAuth(Role.ADMIN), ParcelControllers.manageParcel);
@@ -38,7 +38,7 @@ router.patch('/status-update/:id', validateRequest(agentParcelStatusZodSchema), 
 
 
 // CENCEL PARCEL ------ (SENDER ENDPOINT)
-router.patch('/cancel/:id', checkAuth(Role.ADMIN, Role.SENDER), ParcelControllers.cancelParcel);
+router.patch('/:id/cancel', checkAuth(Role.ADMIN, Role.SENDER), ParcelControllers.cancelParcel);
 
 
 // CONFIRM PARCEL DELIVERY ------ (RECEIVER ENDPOINT)
