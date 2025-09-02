@@ -1,1 +1,1 @@
-export const parcelSearchableFields = ["_id", "serviceType", "deliveryType", "parcelType", "senderEmail", "receiverEmail", "currentStatus"];
+export const parcelSearchableFields = ["serviceType", "deliveryType", "parcelType", "senderEmail", "receiverEmail", "currentStatus"];

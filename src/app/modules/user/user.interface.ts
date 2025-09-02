@@ -37,4 +37,6 @@ export interface IUser {
     address?: string;
     userStatus?: UserStatus;
     agentStatus?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
