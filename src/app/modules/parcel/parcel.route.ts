@@ -27,7 +27,7 @@ router.get('/history', checkAuth(Role.RECEIVER), ParcelControllers.viewHistory);
 
 
 // GET SINGLE PARCEL ------ (SENDER, ADMIN ENDPOINT)
-router.get("/:id", checkAuth(Role.ADMIN, Role.SENDER), ParcelControllers.getSingleParcel);
+router.get("/:id", checkAuth(Role.ADMIN, Role.SENDER, Role.RECEIVER), ParcelControllers.getSingleParcel);
 
 // UPDATE PARCEL ------ (ADMIN ENDPOINT)
 router.patch('/:id', validateRequest(manageParcelZodSchema), checkAuth(Role.ADMIN), ParcelControllers.manageParcel);
@@ -42,7 +42,7 @@ router.patch('/:id/cancel', checkAuth(Role.ADMIN, Role.SENDER), ParcelController
 
 
 // CONFIRM PARCEL DELIVERY ------ (RECEIVER ENDPOINT)
-router.patch('/confirm-delivery/:id', checkAuth(Role.RECEIVER), ParcelControllers.confirmDelivery);
+router.patch('/:id/confirm-delivery', checkAuth(Role.RECEIVER), ParcelControllers.confirmDelivery);
 
 
 // TRACK THE PARCEL ------ (PUBLIC ENDPOINT)

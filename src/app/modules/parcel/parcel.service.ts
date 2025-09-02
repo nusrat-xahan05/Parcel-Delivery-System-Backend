@@ -63,10 +63,8 @@ const getAllParcels = async (query: Record<string, string>) => {
 const getIncomingParcels = async (decodedToken: JwtPayload) => {
     const parcels = await Parcel.find({
         receiverEmail: decodedToken.email,
-        currentStatus: { $nin: ["REQUESTED", "CANCELLED", "BLOCKED", "DELIVERED", "CONFIRMED"] }
-    }).select(
-        "trackingId senderEmail receiverEmail parcelStatusLog parcelType codAmount currentStatus"
-    );
+        currentStatus: { $nin: ["REQUESTED", "CANCELLED", "BLOCKED", "CONFIRMED"] }
+    });
 
     return {
         data: parcels
@@ -75,7 +73,7 @@ const getIncomingParcels = async (decodedToken: JwtPayload) => {
 
 // GET DELIVERY HISTORY ------
 const viewHistory = async (decodedToken: JwtPayload) => {
-    const parcels = await Parcel.find({ receiverEmail: decodedToken.email, currentStatus: ParcelStatus.CONFIRMED }).select('trackingId senderEmail receiverEmail parcelType codAmount currentStatus');
+    const parcels = await Parcel.find({ receiverEmail: decodedToken.email, currentStatus: ParcelStatus.CONFIRMED });
 
     return {
         data: parcels
@@ -218,7 +216,7 @@ const cancelParcel = async (parcelId: string, decodedToken: JwtPayload) => {
 
 // CONFIRM PARCEL DELIVERY ------
 const confirmDelivery = async (parcelId: string, decodedToken: JwtPayload) => {
-    const isParcelExist = await Parcel.findById(parcelId).select('trackingId senderEmail receiverEmail parcelStatusLog parcelType codAmount currentStatus');
+    const isParcelExist = await Parcel.findById(parcelId);
     if (!isParcelExist) {
         throw new AppError(httpStatus.BAD_REQUEST, "No Parcel Exist With This Id");
     }
@@ -227,9 +225,9 @@ const confirmDelivery = async (parcelId: string, decodedToken: JwtPayload) => {
         throw new AppError(httpStatus.BAD_REQUEST, `Can't Do This Operation Right Now. The Parcel is ${isParcelExist.currentStatus}`);
     }
 
-    isParcelExist.currentStatus = ParcelStatus.DELIVERED;
+    isParcelExist.currentStatus = ParcelStatus.CONFIRMED;
     isParcelExist.parcelStatusLog.push({
-        status: ParcelStatus.DELIVERED,
+        status: ParcelStatus.CONFIRMED,
         updatedBy: decodedToken.role,
         updaterId: decodedToken.userId,
     })

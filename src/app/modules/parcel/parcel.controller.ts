@@ -137,7 +137,7 @@ const confirmDelivery = catchAsync(async (req: Request, res: Response, next: Nex
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: "Parcel Is RECEIVED Successfully",
+        message: "Parcel Is Confirmed Successfully",
         data: result.data
     })
 })
