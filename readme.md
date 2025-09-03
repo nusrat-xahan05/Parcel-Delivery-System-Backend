@@ -10,14 +10,23 @@ This system streamlines parcel delivery logistics with four roles: **Admin**, **
 
 ---
 
-## 🚀 Features
-
-- User registration & login with role based.
-- Agent request and approval system
-- Role-specific dashboards (Sender, Receiver, Admin, Agent)
-- Admin can do agent review, user and parcel blocking functionality, manage all parcels and users
-- Parcel creation, view incoming parcel and history, status tracking, cancellation, and delivery confirmation
-- Public parcel tracking by tracking ID
+### 🚀 Features
+- **User Authentication & OTP Verification**
+  - Login, logout, register, send and verify OTP
+- **User Management**
+  - Role-based access: Admin, Sender, Agent, Receiver
+  - Agent requests and approvals
+  - Admin can do agent review, user and parcel blocking functionality, manage all parcels and users
+- **Parcel Management**
+  - Create, update, cancel, and track parcels
+  - Parcel assignment to agents
+  - Delivery status updates
+  - Parcel view history, delivery confirmation and incoming parcels for users
+- **Analytics & Stats**
+  - Dashboard data for Admin
+  - Parcel counts by status, type, service, and delivery
+  - Monthly shipment summaries
+  - User statistics
 
 ---
 
@@ -26,6 +35,7 @@ This system streamlines parcel delivery logistics with four roles: **Admin**, **
 - **Backend**: Express.js, TypeScript, Node.js
 - **Database**: MongoDB with Mongoose
 - **Validation**: Zod
+- **Verification**: Nodemailer, Redis
 - **Auth**: JWT (Access + Refresh Tokens)
 - **Deployment**: Render
 
@@ -43,8 +53,8 @@ This system streamlines parcel delivery logistics with four roles: **Admin**, **
 
 1. Clone the repository:
 ```
-git clone https://github.com/nusrat-xahan05/ParcelRunner-System-Backend.git
-cd ParcelRunner-System-Backend
+git clone https://github.com/nusrat-xahan05/Parcel-Delivery-System-Backend.git
+cd Parcel-Delivery-System-Backend
 npm install
 ```
 
@@ -79,36 +89,47 @@ npm start
 
 ### 👤 Auth (`/api/v1/auth`)
 - POST `/login` – Login with credentials
-- POST `/refresh-token` – Get a new access token
 - POST `/logout` – Logout user
-- POST `/reset-password` – Reset user password
+
+---
+
+### 📥 Otp (`/api/v1/otp`)
+- POST `/send` – Send OTP Code to an Email
+- POST `/verify` – Verify the OTP
 
 ---
 
 ### 🙋 User (`/api/v1/user`)
-- POST `/register` – Register a new user (sender/receiver)
+- POST `/register` – Register a new user (public)
 - POST `/agent-request` – Request to become an agent (sender/receiver)
-- GET `/me` – Get logged-in user profile
-- PATCH `/:id` – Update user info / block by admin
-- GET `/:id` – Get a single user (admin only)
-- GET `/all-users` – Get all users (admin only)
-- GET `/agent-request` – View all agent requests (admin only)
-- POST `/review-agent-request/:id` – Approve or reject agent request (admin only)
+- GET `/me` – Get logged-in user to view self profile
+- GET `/all-users` – Get all users (admin)
+- GET `/agent-requests` – View all agent requests (admin)
+- GET `/:id` – Get a single user (admin)
+- PATCH `/:id` – Update user info / block by admin (admin, sender, receiver, agent)
+- POST `/review-agent-request/:id` – Approve or reject agent request (admin)
 
 ---
 
 ### 📦 Parcel (`/api/v1/parcel`)
-- POST `/create-parcel` – Create a new parcel (sender/admin)
-- GET `/all-parcels` – View all parcels (admin only)
-- GET `/me` – Get sender's own parcels
-- GET `/incoming` – Get incoming parcels (receiver)
+- POST `/create-parcel` – Create a new parcel (sender, admin)
+- GET `/me` – Get parcels Created By Own (sender, admin)
+- GET `/all-parcels` – View all parcels (admin)
+- GET `/assigned-parcels` – View all Assigned parcels (agent)
+- GET `/incoming` – Get incoming parcels list (receiver)
 - GET `/history` – Get delivery history (receiver)
-- GET `/track/:id` – Track parcel using tracking ID (public)
-- GET `/:id` – Get a single parcel (admin only)
-- PATCH `/manage/:id` – Approve or block parcel and assign agent (admin only)
-- PATCH `/status-update/:id` – Update parcel status (agent only)
-- PATCH `/cancel/:id` – Cancel a parcel (sender/admin)
-- PATCH `/confirm-delivery/:id` – Confirm parcel delivery (receiver only)
+- GET `/:id` – Get a single parcel details (admin, sender, receiver)
+- PATCH `/:id` – Approve or block parcel and assign agent (admin)
+- PATCH `status-update/:id` – Update delivery status (agent)
+- PATCH `/:id/cancel` – Cancel a parcel (sender, admin)
+- PATCH `/:id/confirm-delivery` – Confirm parcel delivery (receiver)
+- GET `/track-parcel/:id` – Track parcel using tracking ID (public)
+
+---
+
+### 📊 Stats (`/api/v1/stats`)
+- GET `/user` – Get user statistics (admin)
+- GET `/parcel` – Get parcel statistics (admin)
 
 ---
 
