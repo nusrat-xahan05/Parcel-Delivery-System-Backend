@@ -1,5 +1,5 @@
 import z from "zod";
-import { AgentParcelStatus, DeliveryType, ParcelStatus, ParcelType, ServiceType } from "./parcel.interface";
+import { DeliveryType, ParcelStatus, ParcelType, ServiceType } from "./parcel.interface";
 import { Role } from "../user/user.interface";
 
 
@@ -134,7 +134,7 @@ export const createParcelZodSchema = z.object({
         .number({
             error: (issue) => issue.input === undefined
                 ? "Cash On Delivery Amount is Required"
-                : "Cash On Delivery Amount Must Be a String"
+                : "Cash On Delivery Amount Must Be a Number"
         }).min(0, {
             message: 'Cash On Delivery Amount must be a Positive Number'
         }),
@@ -204,22 +204,3 @@ export const manageParcelZodSchema = z.object({
 }, {
     message: "Need to Assign To An Agent as the Parcel is Approved"
 })
-
-
-export const agentParcelStatusZodSchema = z.object({
-    status: z
-        .enum(Object.values(AgentParcelStatus) as [AgentParcelStatus, ...AgentParcelStatus[]])
-        .optional()
-        .superRefine((val, ctx) => {
-            if (val && !Object.values(AgentParcelStatus).includes(val)) {
-                ctx.addIssue({
-                    code: "custom",
-                    message: `${val} is Not Acceptable`,
-                });
-            }
-        }),
-    location: z
-        .string({ error: 'Location Must Be String' })
-        .max(200, { message: "Location Cannot Exceed 200 Characters" })
-        .optional()
-});

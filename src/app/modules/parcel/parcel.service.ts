@@ -1,6 +1,6 @@
 import { JwtPayload } from "jsonwebtoken";
 import { generateTrackingId } from "../../utils/generateTrackingId";
-import { IParcel, IParcelStatusLog, ParcelStatus } from "./parcel.interface";
+import { IParcel, ParcelStatus } from "./parcel.interface";
 import { Parcel } from "./parcel.model";
 import AppError from "../../errorHelpers/appError";
 import httpStatus from "http-status-codes";
@@ -41,6 +41,27 @@ const getMyParcels = async (decodedToken: JwtPayload) => {
 // GET ALL PARCELS ------
 const getAllParcels = async (query: Record<string, string>) => {
     const queryBuilder = new QueryBuilder(Parcel.find(), query)
+    const parcelsData = queryBuilder
+        .filter()
+        .search(parcelSearchableFields)
+        .sort()
+        .fields()
+        .paginate();
+
+    const [data, meta] = await Promise.all([
+        parcelsData.build(),
+        queryBuilder.getMeta()
+    ])
+
+    return {
+        data,
+        meta
+    }
+}
+
+// GET ASSIGNED PARCELS ------ (AGENT ENDPOINT)
+const getAssignedParcels = async (decodedToken: JwtPayload, query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(Parcel.find({ agentId: decodedToken.userId }), query)
     const parcelsData = queryBuilder
         .filter()
         .search(parcelSearchableFields)
@@ -149,8 +170,9 @@ const manageParcel = async (parcelId: string, payload: Partial<IParcel>, decoded
 };
 
 // UPDATE PARCEL-STATUS ------
-const updateParcelStatus = async (parcelId: string, payload: Partial<IParcelStatusLog>, decodedToken: JwtPayload) => {
+const updateParcelStatus = async (parcelId: string, payload: Partial<IParcel>, decodedToken: JwtPayload) => {
     const isParcelExist = await Parcel.findById(parcelId);
+
     if (!isParcelExist) {
         throw new AppError(httpStatus.BAD_REQUEST, "No Parcel Exist With This Id");
     }
@@ -159,35 +181,45 @@ const updateParcelStatus = async (parcelId: string, payload: Partial<IParcelStat
         throw new AppError(httpStatus.BAD_REQUEST, "You're Not Assigned For This Parcel");
     }
 
-    if (payload.status === isParcelExist.currentStatus) {
-        throw new AppError(httpStatus.BAD_REQUEST, `Cannot ${payload.status}. Parcel is Already ${isParcelExist.currentStatus}`);
+    if (payload.currentStatus === isParcelExist.currentStatus) {
+        throw new AppError(httpStatus.BAD_REQUEST, `Cannot ${payload.currentStatus}. Parcel is Already ${isParcelExist.currentStatus}`);
     }
 
-    if (payload.status) {
-        if ((payload.status === ParcelStatus.DISPATCHED)
+    if (payload.currentStatus) {
+        if ((payload.currentStatus === ParcelStatus.DISPATCHED)
             ||
-            ((payload.status === ParcelStatus.IN_TRANSIT) && (isParcelExist.currentStatus === ParcelStatus.DISPATCHED))
+            ((payload.currentStatus === ParcelStatus.IN_TRANSIT) && (isParcelExist.currentStatus === ParcelStatus.DISPATCHED))
             ||
-            ((payload.status === ParcelStatus.OUT_FOR_DELIVERY) && (isParcelExist.currentStatus === ParcelStatus.IN_TRANSIT))
+            ((payload.currentStatus === ParcelStatus.OUT_FOR_DELIVERY) && (isParcelExist.currentStatus === ParcelStatus.IN_TRANSIT))
             ||
-            ((payload.status === ParcelStatus.DELIVERED) && (isParcelExist.currentStatus === ParcelStatus.OUT_FOR_DELIVERY))) {
-            isParcelExist.currentStatus = payload.status;
+            ((payload.currentStatus === ParcelStatus.DELIVERED) && (isParcelExist.currentStatus === ParcelStatus.OUT_FOR_DELIVERY))) {
+            isParcelExist.currentStatus = payload.currentStatus;
             isParcelExist.parcelStatusLog.push({
                 status: isParcelExist.currentStatus,
                 updatedBy: decodedToken.role,
-                updaterId: decodedToken.userId,
-                location: payload.location
+                updaterId: decodedToken.userId
             })
         }
         else {
-            throw new AppError(httpStatus.BAD_REQUEST, `Cannot ${payload.status}. Parcel is Just ${isParcelExist.currentStatus}`);
+            throw new AppError(httpStatus.BAD_REQUEST, `Cannot ${payload.currentStatus}. Parcel is Just ${isParcelExist.currentStatus}`);
         }
     }
     await isParcelExist.save();
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { currentStatus, ...rest } = payload;
+    const parcel = await Parcel.findByIdAndUpdate(
+        parcelId,
+        {
+            currentStatus: isParcelExist.currentStatus,
+            ...rest
+        },
+        { new: true, runValidators: true });
+
     return {
-        data: isParcelExist
+        data: parcel
     }
+
 };
 
 // CANCEL PARCEL ------
@@ -268,5 +300,5 @@ const trackParcel = async (trackingId: string) => {
 };
 
 export const ParcelServices = {
-    createParcel, getAllParcels, getIncomingParcels, viewHistory, getMyParcels, getSingleParcel, manageParcel, updateParcelStatus, cancelParcel, confirmDelivery, trackParcel
+    createParcel, getAllParcels, getAssignedParcels, getIncomingParcels, viewHistory, getMyParcels, getSingleParcel, manageParcel, updateParcelStatus, cancelParcel, confirmDelivery, trackParcel
 }

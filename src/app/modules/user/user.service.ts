@@ -138,7 +138,7 @@ const updateUser = async (userId: string, payload: Partial<IUser>, decodedToken:
 
 // REVIEW AGENT REQUEST BY ADMIN ------
 const reviewAgentRequest = async (requestId: string, payload: Partial<IAgentRequest>, decodedToken: JwtPayload) => {
-    const isRequestExist = await AgentRequest.findById(requestId);
+    const isRequestExist = await AgentRequest.findOne({ userId: requestId });
     if (!isRequestExist) {
         throw new AppError(httpStatus.NOT_FOUND, "No Request Exist With This Id");
     }

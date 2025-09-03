@@ -47,6 +47,21 @@ const getAllParcels = catchAsync(async (req: Request, res: Response, next: NextF
     })
 })
 
+// GET ASSIGNED PARCELS ------ (AGENT ENDPOINT)
+const getAssignedParcels = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const query = req.query;
+    const decodedToken = req.user as JwtPayload;
+    const result = await ParcelServices.getAssignedParcels(decodedToken, query as Record<string, string>);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: "Parcels Retrieved Successfully",
+        data: result.data,
+        meta: result.meta
+    })
+})
+
 // GET INCOMING PARCELS ------
 const getIncomingParcels = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const decodedToken = req.user
@@ -156,5 +171,5 @@ const trackParcel = catchAsync(async (req: Request, res: Response, next: NextFun
 })
 
 export const ParcelControllers = {
-    createParcel, getAllParcels, viewHistory, getMyParcels, getIncomingParcels, getSingleParcel, manageParcel, updateParcelStatus, cancelParcel, confirmDelivery, trackParcel
+    createParcel, getAllParcels, getAssignedParcels, viewHistory, getMyParcels, getIncomingParcels, getSingleParcel, manageParcel, updateParcelStatus, cancelParcel, confirmDelivery, trackParcel
 }

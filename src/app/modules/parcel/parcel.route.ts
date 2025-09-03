@@ -3,7 +3,7 @@ import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
 import { ParcelControllers } from "./parcel.controller";
 import { validateRequest } from "../../middlewares/validateRequest";
-import { agentParcelStatusZodSchema, createParcelZodSchema, manageParcelZodSchema } from "./parcel.validation";
+import { createParcelZodSchema, manageParcelZodSchema } from "./parcel.validation";
 
 
 const router = Router()
@@ -17,6 +17,9 @@ router.get('/me', checkAuth(Role.ADMIN, Role.SENDER), ParcelControllers.getMyPar
 
 // GET ALL PARCELS ------ (ADMIN ENDPOINT)
 router.get('/all-parcels', checkAuth(Role.ADMIN), ParcelControllers.getAllParcels);
+
+// GET ASSIGNED PARCELS ------ (AGENT ENDPOINT)
+router.get('/assigned-parcels', checkAuth(Role.AGENT), ParcelControllers.getAssignedParcels);
 
 
 // GET INCOMING PARCELS ------ (RECEIVER ENDPOINT)
@@ -34,7 +37,7 @@ router.patch('/:id', validateRequest(manageParcelZodSchema), checkAuth(Role.ADMI
 
 
 // UPDATE PARCEL-STATUS ------ (AGENT ENDPOINT)
-router.patch('/status-update/:id', validateRequest(agentParcelStatusZodSchema), checkAuth(Role.AGENT), ParcelControllers.updateParcelStatus);
+router.patch('/status-update/:id', validateRequest(manageParcelZodSchema), checkAuth(Role.AGENT), ParcelControllers.updateParcelStatus);
 
 
 // CENCEL PARCEL ------ (SENDER ENDPOINT)
